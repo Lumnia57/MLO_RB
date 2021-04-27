@@ -1,3 +1,4 @@
+package Model;
 //********************************************************************
 //  RationalNumber.java       Author: Lewis/Loftus
 //
