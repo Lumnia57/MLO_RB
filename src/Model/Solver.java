@@ -74,7 +74,8 @@ public class Solver {
      * Solves the MLO problem using MLO_RB and prints the results in the standard output.
      */
     public void solveUsingMLO_RB(){
-        System.out.println(problemToMatrix());
+        MLO_RB mlo_rb = new MLO_RB(problemToMatrix(),mloProblem.getObjFun());
+        mlo_rb.solve();
     }
 
     /**
@@ -82,7 +83,7 @@ public class Solver {
      * @return The problem converted to a RationalNumberMatrix.
      */
     private RationalNumberMatrix problemToMatrix(){
-        int rowNum = mloProblem.getB().size();
+        int rowNum = mloProblem.getB().size() + 1;
         int colNum = mloProblem.getNbVar() + 1;
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
@@ -98,19 +99,23 @@ public class Solver {
         int index = 0;
         RationalNumber[] row;
 
+        LinkedList<String> toBeConverted = mloProblem.getValues();
+        toBeConverted.addLast(mloProblem.getObjFun());
+
         /* row string to matrix */
         for(String s1 : mloProblem.getValues()){
             rl.clear();
             sl.clear();
             /* row string to string list */
-            p = Pattern.compile("[0-9]+([/][0-9])?");
+            p = Pattern.compile("[-]?[0-9]+([/][-]?[0-9]+)?");
             m = p.matcher(s1);
             while (m.find()){
                 sl.addLast(m.group(0));
             }
 
             /* string list to rational number list */
-            p = Pattern.compile("[0-9]+");
+            p = Pattern.compile("[-]?[0-9]+");
+            count = 0;
             for(String s2 : sl){
                 m = p.matcher(s2);
                 while (m.find()){
@@ -135,7 +140,12 @@ public class Solver {
             }
 
             row = rl.toArray(new RationalNumber[rl.size()+1]);
-            row[colNum-1] = new RationalNumber((int)Double.parseDouble(mloProblem.getB().get(index)),1); /* works because B is filled with int */
+            if(index<rowNum-1){
+                row[colNum-1] = new RationalNumber((int)Double.parseDouble(mloProblem.getB().get(index)),1); /* works because B is filled with int */
+            }else{
+                row[colNum-1] = new RationalNumber(0,1);
+            }
+
 
             matrix.addRow(row,index);
             index++;

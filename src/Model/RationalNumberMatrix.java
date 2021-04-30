@@ -145,4 +145,11 @@ public class RationalNumberMatrix {
             row[i] = new RationalNumber(0,1);
         }
     }
+
+    @Override
+    public RationalNumberMatrix clone(){
+        RationalNumberMatrix m = new RationalNumberMatrix(rowNum,colNum);
+        m.matrix = matrix.clone();
+        return m;
+    }
 }
