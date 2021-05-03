@@ -162,4 +162,17 @@ public class RationalNumber
 
         return num1;
     }
+
+    public boolean isLessThanOrEqualTo(RationalNumber op2){
+        boolean res = false;
+        if(this.numerator<0 && op2.numerator>=0)
+            res = true;
+        if(this.numerator>=0 && op2.numerator>=0 || this.numerator<=0 && op2.numerator<=0){
+            int numerator1 = this.numerator*op2.denominator;
+            int numerator2 = op2.numerator*this.denominator;
+            res = numerator1<=numerator2;
+        }
+
+        return res;
+    }
 }

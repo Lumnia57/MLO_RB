@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 /**
  * @author Raphaël Bagat
- * @version 1.0
+ * @version 0.2
  */
 public class Solver {
     private MLOProblem mloProblem;
@@ -82,8 +82,9 @@ public class Solver {
      * Converts the problem to a RationalNumberMatrix.
      * @return The problem converted to a RationalNumberMatrix.
      */
-    private RationalNumberMatrix problemToMatrix(){
-        int rowNum = mloProblem.getB().size() + 1;
+    //DOIT ETRE PRIVATE
+    public RationalNumberMatrix problemToMatrix(){
+        int rowNum = mloProblem.getnbColumns() + 1;
         int colNum = mloProblem.getNbVar() + 1;
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
@@ -119,24 +120,20 @@ public class Solver {
             for(String s2 : sl){
                 m = p.matcher(s2);
                 while (m.find()){
-                    if(count%2==0){
-                        num = Integer.parseInt(m.group(0));
-                    }else{
-                        if(s2.contains("/")){
-                            denom = Integer.parseInt(m.group(0));
+                    if(s2.contains("/")){
+                        if(count%2==0){
+                            num = Integer.parseInt(m.group(0));
                         }else{
-                            denom = 1;
+                            denom = Integer.parseInt(m.group(0));
+                            rl.addLast(new RationalNumber(num,denom));
                         }
+                        count++;
+                    }else{
+                        num = Integer.parseInt(m.group(0));
+                        denom = 1;
                         rl.addLast(new RationalNumber(num,denom));
                     }
-                    count++;
                 }
-            }
-            /* the previous loop doesn't include the last element of sl if it doesn't contain a "/"
-             * so we have to include it if it's the case */
-            if(!sl.getLast().contains("/")){
-                num = Integer.parseInt(sl.getLast());
-                rl.addLast(new RationalNumber(num,1));
             }
 
             row = rl.toArray(new RationalNumber[rl.size()+1]);
@@ -145,7 +142,6 @@ public class Solver {
             }else{
                 row[colNum-1] = new RationalNumber(0,1);
             }
-
 
             matrix.addRow(row,index);
             index++;

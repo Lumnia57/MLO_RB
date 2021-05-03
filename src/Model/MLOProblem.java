@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 /**
  * @author Raphaël Bagat
- * @version 1.0
+ * @version 1.1
  */
 public class MLOProblem {
     private LinkedList<String> values;
@@ -82,9 +82,17 @@ public class MLOProblem {
 
     /**
      * Gets the number of variables.
-     * @return The numver of variables.
+     * @return The number of variables.
      */
     public int getNbVar() {
         return nbVar;
+    }
+
+    /**
+     * Gets the number of columns.
+     * @return The number of columns.
+     */
+    public int getnbColumns(){
+        return B.size();
     }
 }

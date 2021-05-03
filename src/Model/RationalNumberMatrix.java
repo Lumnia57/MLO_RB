@@ -2,12 +2,12 @@ package Model;
 
 /**
  * @author Raphaël Bagat
- * @version 1.0
+ * @version 1.1
  */
 public class RationalNumberMatrix {
-    RationalNumber[][] matrix;
-    int rowNum;
-    int colNum;
+    private RationalNumber[][] matrix;
+    private int rowNum;
+    private int colNum;
 
     /**
      * Constructor.
@@ -151,5 +151,48 @@ public class RationalNumberMatrix {
         RationalNumberMatrix m = new RationalNumberMatrix(rowNum,colNum);
         m.matrix = matrix.clone();
         return m;
+    }
+
+    public boolean isLessThanOrEqualTo(RationalNumberMatrix other){
+        assert(rowNum==other.rowNum && colNum==other.colNum):"The two matrices must have the same dimensions";
+        boolean res = true;
+        for(int i=0;i<rowNum && res;i++){
+            for(int j=0;j<colNum && res;j++){
+                res = matrix[i][j].isLessThanOrEqualTo(other.matrix[i][j]);
+            }
+        }
+
+        return res;
+    }
+
+    public void swapRows(int index1, int index2){
+        assert(index1<rowNum && index2<rowNum && index1>=0 && index2>=0):"The indexes have to be between 0 and rowNum-1";
+        RationalNumber[] temp = matrix[index1];
+        matrix[index1] = matrix[index2];
+        matrix[index2] = temp;
+    }
+
+    public void swapColumns(int index1, int index2){
+        assert(index1<colNum && index2<colNum && index1>=0 && index2>=0):"The indexes have to be between 0 and colNum-1";
+        RationalNumber temp;
+        for(int i=0;i<rowNum;i++){
+            temp = matrix[i][index1];
+            matrix[i][index1] = matrix[i][index2];
+            matrix[i][index2] = temp;
+        }
+    }
+
+    public void multiplyRowByScalar(int index, RationalNumber s){
+        assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
+        for(int i=0;i<colNum;i++){
+            matrix[index][i] = matrix[index][i].multiply(s);
+        }
+    }
+
+    public void multiplyColumnByScalar(int index, RationalNumber s){
+        assert(index>=0 && index<colNum):"The index has to be between 0 and colNum-1";
+        for(int i=0;i<rowNum;i++){
+            matrix[i][index] = matrix[i][index].multiply(s);
+        }
     }
 }
