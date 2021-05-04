@@ -107,6 +107,11 @@ public class RationalNumberMatrix {
         return matrix[row][col];
     }
 
+    public void set(int row,int col, RationalNumber n){
+        assert(row<rowNum && col<colNum):"";
+        matrix[row][col] = n;
+    }
+
     /**
      * Returns this matrix in a 2-dimensional array. Each elements of the array are of double type instead.
      * @return This matrix in a 2-dimensional array. Each elements of the array are of double type instead.
@@ -194,5 +199,23 @@ public class RationalNumberMatrix {
         for(int i=0;i<rowNum;i++){
             matrix[i][index] = matrix[i][index].multiply(s);
         }
+    }
+
+    public int getRowNum() {
+        return rowNum;
+    }
+
+    public int getColNum() {
+        return colNum;
+    }
+
+    public RationalNumber[] getRow(int index){
+        assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
+        return matrix[index];
+    }
+
+    public void setRow(int index, RationalNumber[] newRow){
+        assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
+        matrix[index] = newRow;
     }
 }

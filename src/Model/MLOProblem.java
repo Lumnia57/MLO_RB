@@ -92,7 +92,18 @@ public class MLOProblem {
      * Gets the number of columns.
      * @return The number of columns.
      */
-    public int getnbColumns(){
+    public int getNbRows(){
         return B.size();
+    }
+
+    @Override
+    public MLOProblem clone(){
+        MLOProblem newPb = new MLOProblem(nbVar);
+        newPb.values = (LinkedList<String>) values.clone();
+        newPb.B = (LinkedList<String>) B.clone();
+        newPb.types = (LinkedList<Integer>) types.clone();
+        newPb.objFun = objFun;
+
+        return newPb;
     }
 }

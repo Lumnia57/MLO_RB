@@ -8,6 +8,8 @@ package Model;
 public class RationalNumber
 {
     private int numerator, denominator;
+    public static RationalNumber ZERO = new RationalNumber(0,1);
+    public static RationalNumber ONE = new RationalNumber(1,1);
 
     //-----------------------------------------------------------------
     //  Constructor: Sets up the rational number by ensuring a nonzero
@@ -174,5 +176,12 @@ public class RationalNumber
         }
 
         return res;
+    }
+
+    public RationalNumber absoluteValue(){
+        int newNum = numerator;
+        if(newNum<0)
+            newNum *= -1;
+        return new RationalNumber(newNum,denominator);
     }
 }

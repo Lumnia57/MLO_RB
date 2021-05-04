@@ -74,7 +74,7 @@ public class Solver {
      * Solves the MLO problem using MLO_RB and prints the results in the standard output.
      */
     public void solveUsingMLO_RB(){
-        MLO_RB mlo_rb = new MLO_RB(problemToMatrix(),mloProblem.getObjFun());
+        MLO_RB mlo_rb = new MLO_RB(problemToNormalizedProblemMatrix(),mloProblem.getObjFun());
         mlo_rb.solve();
     }
 
@@ -82,10 +82,11 @@ public class Solver {
      * Converts the problem to a RationalNumberMatrix.
      * @return The problem converted to a RationalNumberMatrix.
      */
-    //DOIT ETRE PRIVATE
-    public RationalNumberMatrix problemToMatrix(){
-        int rowNum = mloProblem.getnbColumns() + 1;
-        int colNum = mloProblem.getNbVar() + 1;
+    public RationalNumberMatrix problemToNormalizedProblemMatrix(){
+        MLOProblem mloProblem = this.mloProblem.clone();
+        int numAddedVariables = mloProblem.getNbRows();
+        int rowNum = mloProblem.getNbRows() + 1;
+        int colNum = mloProblem.getNbVar() + 1 + numAddedVariables;
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
         LinkedList<String> sl = new LinkedList<>();
@@ -95,7 +96,8 @@ public class Solver {
         LinkedList<RationalNumber> rl = new LinkedList<>();
         int num=0;
         int denom;
-        int count = 0;
+        int count;
+        int countAddedVar;
 
         int index = 0;
         RationalNumber[] row;
@@ -104,9 +106,18 @@ public class Solver {
         toBeConverted.addLast(mloProblem.getObjFun());
 
         /* row string to matrix */
-        for(String s1 : mloProblem.getValues()){
+        for(String s1 : toBeConverted){
             rl.clear();
             sl.clear();
+            countAddedVar=0;
+            while(countAddedVar<numAddedVariables) {
+                if (countAddedVar == index)
+                    s1 += " 1";
+                else
+                    s1 += " 0";
+                countAddedVar++;
+            }
+
             /* row string to string list */
             p = Pattern.compile("[-]?[0-9]+([/][-]?[0-9]+)?");
             m = p.matcher(s1);

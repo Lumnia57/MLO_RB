@@ -4,9 +4,7 @@ import Model.RationalNumber;
 import Model.RationalNumberMatrix;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RationalNumberMatrixTest {
     @Test
