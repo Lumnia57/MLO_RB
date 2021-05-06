@@ -10,6 +10,7 @@ public class RationalNumber
     private int numerator, denominator;
     public static RationalNumber ZERO = new RationalNumber(0,1);
     public static RationalNumber ONE = new RationalNumber(1,1);
+    public static RationalNumber MINUS_ONE = new RationalNumber(-1,1);
 
     //-----------------------------------------------------------------
     //  Constructor: Sets up the rational number by ensuring a nonzero

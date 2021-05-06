@@ -4,9 +4,11 @@ public class Simplex {
     private RationalNumberMatrix matrix;
     private int rows, cols;
     private boolean solutionIsUnbounded = false;
-    private RationalNumber ZERO = new RationalNumber(0,1);
-    private RationalNumber ONE = new RationalNumber(1,1);
 
+    /**
+     * Constructor.
+     * @param m The beginning matrix of the method.
+     */
     public Simplex(RationalNumberMatrix m){
         matrix = m.clone();
         rows = m.getRowNum();
@@ -19,6 +21,10 @@ public class Simplex {
         UNBOUNDED
     };
 
+    /**
+     * Computes the current matrix.
+     * @return IS_OPTIMAL if the solution is optimal, UNBOUNDED if the solution is unbounded, else NOT_OPTIMAL.
+     */
     public RESULT compute(){
         // step 1
         if(checkOptimality()){
@@ -39,14 +45,20 @@ public class Simplex {
         //System.out.println("Pivot row: "+ pivotRow);
 
         // step 4
-        // form the next tableau
+        // form the next matrix
         formNextMatrix(pivotRow, pivotColumn);
+
+        //System.out.println("-------");System.out.println(matrix);
 
         // since we formed a new table so return NOT_OPTIMAL
         return RESULT.NOT_OPTIMAL;
     }
 
-    // Forms a new tableau from precomuted values.
+    /**
+     * Forms a new matrix from precomputed pivot values.
+     * @param pivotRow The pivot's row index.
+     * @param pivotColumn The pivot's column index.
+     */
     private void formNextMatrix(int pivotRow, int pivotColumn){
         RationalNumber pivotValue = matrix.get(pivotRow,pivotColumn);
         RationalNumber[] pivotRowVals = new RationalNumber[cols];
@@ -57,7 +69,7 @@ public class Simplex {
         // get entry in pivot row
         System.arraycopy(matrix.getRow(pivotRow), 0, pivotRowVals, 0, cols);
 
-        // get entry inpivot colum
+        // get entry in pivot column
         for(int i = 0; i < rows; i++)
             pivotColumnVals[i] = matrix.get(i,pivotColumn);
 
@@ -79,17 +91,22 @@ public class Simplex {
         matrix.setRow(pivotRow,rowNew);
     }
 
-    // calculates the pivot row ratios
+    /**
+     * Calculates the pivot row ratios
+     * @param column The pivot's column index.
+     * @return The pivot row ratios in an Array.
+     */
     private RationalNumber[] calculateRatios(int column){
         RationalNumber[] positiveEntries = new RationalNumber[rows];
         RationalNumber[] res = new RationalNumber[rows];
+
         int allNegativeCount = 0;
         for(int i = 0; i < rows; i++){
-            if(!matrix.get(i,column).isLessThanOrEqualTo(ZERO)){
+            if(!matrix.get(i,column).isLessThanOrEqualTo(RationalNumber.ZERO)){ //matrix[i][column] > 0
                 positiveEntries[i] = matrix.get(i,column);
             }
             else{
-                positiveEntries[i] = ZERO;
+                positiveEntries[i] = RationalNumber.ZERO;
                 allNegativeCount++;
             }
             //System.out.println(positiveEntries[i]);
@@ -100,8 +117,10 @@ public class Simplex {
         else{
             for(int i = 0;  i < rows; i++){
                 RationalNumber val = positiveEntries[i];
-                if(!val.isLessThanOrEqualTo(ZERO)){
+                if(!val.isLessThanOrEqualTo(RationalNumber.ZERO)){ // val > 0
                     res[i] = matrix.get(i,cols-1).divide(val);
+                }else{
+                    res[i] = RationalNumber.ZERO;
                 }
             }
         }
@@ -109,14 +128,17 @@ public class Simplex {
         return res;
     }
 
-    // finds the next entering column
+    /**
+     * Finds the next entering column.
+     * @return The next entering column index.
+     */
     private int findEnteringColumn(){
         RationalNumber[] values = new RationalNumber[cols];
         int location = 0;
 
         int pos, count = 0;
         for(pos = 0; pos < cols-1; pos++){
-            if(matrix.get(rows-1,pos).add(ONE).isLessThanOrEqualTo(ZERO)){ //matrx[rows-1][pos] < 0
+            if(matrix.get(rows-1,pos).add(RationalNumber.ONE).isLessThanOrEqualTo(RationalNumber.ZERO)){ //matrx[rows-1][pos] < 0
                 //System.out.println("negative value found");
                 count++;
             }
@@ -132,15 +154,20 @@ public class Simplex {
     }
 
 
-    // finds the smallest value in an array
+    /**
+     * Finds the smallest positive value in an array.
+     * @param data The array.
+     * @return The index of the smallest positive value in the array.
+     */
     private int findSmallestValue(RationalNumber[] data){
         RationalNumber minimum ;
         int c, location = 0;
         minimum = data[0];
 
         for(c = 1; c < data.length; c++){
-            if(!data[c].isLessThanOrEqualTo(ZERO)){
-                if(data[c].add(ONE).isLessThanOrEqualTo(minimum)){ //data[c] < minimum
+            //System.out.println(data[c]);
+            if(!data[c].isLessThanOrEqualTo(RationalNumber.ZERO)){ //data[c] > 0
+                if(data[c].add(RationalNumber.ONE).isLessThanOrEqualTo(minimum)){ //data[c] < minimum
                     minimum = data[c];
                     location  = c;
                 }
@@ -150,14 +177,18 @@ public class Simplex {
         return location;
     }
 
-    // finds the largest value in an array
+    /**
+     * Finds the index of the largest value in an array
+     * @param data The array.
+     * @return The index of the largest value in the array.
+     */
     private int findLargestValue(RationalNumber[] data){
         RationalNumber maximum;
         int c, location = 0;
         maximum = data[0];
 
         for(c = 1; c < data.length; c++){
-            if(maximum.add(ONE).isLessThanOrEqualTo(data[c])){ //maximum < data[c]
+            if(maximum.add(RationalNumber.ONE).isLessThanOrEqualTo(data[c])){ //maximum < data[c]
                 maximum = data[c];
                 location  = c;
             }
@@ -166,19 +197,23 @@ public class Simplex {
         return location;
     }
 
-    // checks if the table is optimal
+    /**
+     * Checks if the matrix is optimal
+     * @return True if the matrix is optimal, else false.
+     */
     public boolean checkOptimality(){
         boolean isOptimal = false;
         int vCount = 0;
 
-        for(int i = 0; i < cols-1; i++){
+        for(int i = 0; i < cols; i++){
             RationalNumber val = matrix.get(rows-1,i);
-            if(val.isLessThanOrEqualTo(ZERO)){ // 0 <= val je tente val <= 0
+            if(val.isLessThanOrEqualTo(RationalNumber.ZERO.subtract(RationalNumber.ONE))){ // val < 0
+            //if(RationalNumber.ZERO.isLessThanOrEqualTo(val)){ // 0 <= val
                 vCount++;
             }
         }
 
-        if(vCount == cols-1){
+        if(vCount == (cols-1)/2){
             isOptimal = true;
         }
 

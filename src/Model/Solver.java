@@ -158,6 +158,11 @@ public class Solver {
             index++;
         }
 
+        // we want to minimize so we have to change the sign of the objective function's ratios
+        for(int i=0;i<matrix.getColNum();i++){
+            matrix.set(matrix.getRowNum()-1,i,matrix.get(matrix.getRowNum()-1,i).multiply(RationalNumber.MINUS_ONE));
+        }
+
         return matrix;
     }
 }

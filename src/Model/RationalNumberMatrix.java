@@ -158,6 +158,12 @@ public class RationalNumberMatrix {
         return m;
     }
 
+    /**
+     * Checks if this matrix is less than or equal to an other matrix.
+     * @param other The other matrix.
+     * @return True if this <= other, else false.
+     * @throws AssertionError The two matrices must have the same dimensions.
+     */
     public boolean isLessThanOrEqualTo(RationalNumberMatrix other){
         assert(rowNum==other.rowNum && colNum==other.colNum):"The two matrices must have the same dimensions";
         boolean res = true;
@@ -170,6 +176,12 @@ public class RationalNumberMatrix {
         return res;
     }
 
+    /**
+     * Swap two rows in the matrix.
+     * @param index1 The index of the first row to swap.
+     * @param index2 The index of the second row to swap.
+     * @throws AssertionError The indexes have to be between 0 and rowNum-1.
+     */
     public void swapRows(int index1, int index2){
         assert(index1<rowNum && index2<rowNum && index1>=0 && index2>=0):"The indexes have to be between 0 and rowNum-1";
         RationalNumber[] temp = matrix[index1];
@@ -177,6 +189,12 @@ public class RationalNumberMatrix {
         matrix[index2] = temp;
     }
 
+    /**
+     * Swap two columns in the matrix.
+     * @param index1 The index of the first column to swap.
+     * @param index2 The index of the second column to swap.
+     * @throws AssertionError The indexes have to be between 0 and colNum-1.
+     */
     public void swapColumns(int index1, int index2){
         assert(index1<colNum && index2<colNum && index1>=0 && index2>=0):"The indexes have to be between 0 and colNum-1";
         RationalNumber temp;
@@ -187,6 +205,12 @@ public class RationalNumberMatrix {
         }
     }
 
+    /**
+     * Multiplies a row by a scalar.
+     * @param index The index of the row to multiply.
+     * @param s The scalar.
+     * @throws AssertionError The index has to be between 0 and rowNum-1.
+     */
     public void multiplyRowByScalar(int index, RationalNumber s){
         assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
         for(int i=0;i<colNum;i++){
@@ -194,6 +218,12 @@ public class RationalNumberMatrix {
         }
     }
 
+    /**
+     * Multiplies a column by a scalar.
+     * @param index The index of the column to multiply.
+     * @param s The scalar.
+     * @throws AssertionError The index has to be between 0 and colNum-1.
+     */
     public void multiplyColumnByScalar(int index, RationalNumber s){
         assert(index>=0 && index<colNum):"The index has to be between 0 and colNum-1";
         for(int i=0;i<rowNum;i++){
@@ -201,19 +231,39 @@ public class RationalNumberMatrix {
         }
     }
 
+    /**
+     * Returns rowNum.
+     * @return rowNum.
+     */
     public int getRowNum() {
         return rowNum;
     }
 
+    /**
+     * Returns colNum.
+     * @return colNum.
+     */
     public int getColNum() {
         return colNum;
     }
 
+    /**
+     * Returns a row of the matrix.
+     * @param index The index of the row.
+     * @return The row of the matrix at the index.
+     * @throws AssertionError The index has to be between 0 and rowNum-1.
+     */
     public RationalNumber[] getRow(int index){
         assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
         return matrix[index];
     }
 
+    /**
+     * Sets a row in the matrix.
+     * @param index The index of the row.
+     * @param newRow The new row.
+     * @throws AssertionError The index has to be between 0 and rowNum-1.
+     */
     public void setRow(int index, RationalNumber[] newRow){
         assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
         matrix[index] = newRow;
