@@ -3,6 +3,7 @@ package Model;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,8 +75,13 @@ public class Solver {
      * Solves the MLO problem using MLO_RB and prints the results in the standard output.
      */
     public void solveUsingMLO_RB(){
-        MLO_RB mlo_rb = new MLO_RB(problemToNormalizedProblemMatrix(),mloProblem.getObjFun());
+        MLO_RB mlo_rb = new MLO_RB(problemToNormalizedProblemMatrix(),mloProblem.getObjFun(),mloProblem.getNbVar());
         mlo_rb.solve();
+    }
+
+    public void checkFeasibilityUsingMLO_RB(){
+        MLO_RB mlo_rb = new MLO_RB(problemToNormalizedProblemMatrix(),mloProblem.getObjFun(),mloProblem.getNbVar());
+        mlo_rb.checkFeasibility(mloProblem.clone());
     }
 
     /**
@@ -155,6 +161,7 @@ public class Solver {
             }
 
             matrix.addRow(row,index);
+
             index++;
         }
 
@@ -164,5 +171,122 @@ public class Solver {
         }
 
         return matrix;
+    }
+
+    public RationalNumberMatrix problemToNormalizedPhaseOneMatrix(){
+        RationalNumberMatrix mStart = problemToNormalizedProblemMatrix();
+
+        // we want to change all the constraints so that all Bi are positive
+        LinkedList<String> B = this.mloProblem.getB();
+        LinkedList<Integer> types = this.mloProblem.getTypes();
+        for(int i=0;i<B.size();i++){
+            double val = Double.parseDouble(B.get(i));
+            if(val<0){
+                mStart.multiplyRowByScalar(i,RationalNumber.MINUS_ONE);
+                if(types.get(i)==0){
+                    types.set(i,2);
+                }else if(types.get(i)==2){
+                    types.set(i,0);
+                }
+            }
+        }
+
+        int rowNum = this.mloProblem.getNbRows() + 3;
+        int colNum = this.mloProblem.getNbVar() + 1;
+        for(int t : this.mloProblem.getTypes()){
+            switch (t){
+                case 0: // <=
+                case 1: // =
+                    colNum++;
+                    break;
+                case 2: // >=
+                    colNum += 2;
+                    break;
+            }
+        }
+
+        RationalNumberMatrix m = new RationalNumberMatrix(rowNum,colNum);
+
+        RationalNumber[] row;
+        // we start to fill the matrix with the constraints coefficients
+        for(int r=0;r<this.mloProblem.getNbRows();r++){
+            for(int c=0;c<this.mloProblem.getNbVar();c++){
+                m.set(r,c,mStart.get(r,c));
+            }
+            row = mStart.getRow(r);
+            m.set(r,colNum-1,row[row.length-1]);
+        }
+
+        // we add slack, surplus and artificial variables
+        int startingCol = this.mloProblem.getNbVar();
+        int nbAddedVar = 0;
+        int r = 0;
+        LinkedList<Integer> rowsWithArtificialVar = new LinkedList<>();
+        LinkedList<Integer> colsWithArtifiacialVar = new LinkedList<>();
+        for(int t : types){
+            switch (t){
+                case 0: // <=
+                    m.set(r,startingCol+nbAddedVar,RationalNumber.ONE);
+                    r++;
+                    nbAddedVar++;
+                    break;
+                case 1: // =
+                    m.set(r,startingCol+nbAddedVar,RationalNumber.ONE);
+                    rowsWithArtificialVar.add(r);
+                    colsWithArtifiacialVar.add(startingCol+nbAddedVar);
+                    r++;
+                    nbAddedVar++;
+                    break;
+                case 2: // >=
+                    m.set(r,startingCol+nbAddedVar,RationalNumber.MINUS_ONE);
+                    m.set(r,startingCol+nbAddedVar+1,RationalNumber.ONE);
+                    rowsWithArtificialVar.add(r);
+                    colsWithArtifiacialVar.add(startingCol+nbAddedVar+1);
+                    r++;
+                    nbAddedVar+=2;
+                    break;
+            }
+        }
+
+        // replace null with 0
+        for(r=0;r<this.mloProblem.getNbRows();r++){
+            for(int c=startingCol;c<colNum;c++){
+                if(m.get(r,c)==null){
+                    m.set(r,c,RationalNumber.ZERO);
+                }
+            }
+        }
+
+        // Zj row
+        int rowZj = this.mloProblem.getNbRows();
+        for(int c=0;c<colNum;c++){
+            RationalNumber sum = RationalNumber.ZERO;
+            for(int rowWA : rowsWithArtificialVar){
+                sum = sum.add(m.get(rowWA,c));
+            }
+            m.set(rowZj,c,sum.multiply(RationalNumber.MINUS_ONE));
+        }
+
+        // Cj row
+        int rowCj = rowZj+1;
+        for(int colWA : colsWithArtifiacialVar){
+            m.set(rowCj,colWA,RationalNumber.MINUS_ONE);
+        }
+        for(int c=0;c<colNum;c++){
+            if(m.get(rowCj,c)==null){
+                m.set(rowCj,c,RationalNumber.ZERO);
+            }
+        }
+
+        // Zj-Cj row
+        int rowZjMinusCj = rowCj+1;
+        for(int c=0;c<colNum;c++){
+            RationalNumber fromZj = m.get(rowZj,c);
+            RationalNumber fromCj = m.get(rowCj,c);
+            RationalNumber res = fromZj.subtract(fromCj);
+            m.set(rowZjMinusCj,c,res);
+        }
+
+        return m;
     }
 }

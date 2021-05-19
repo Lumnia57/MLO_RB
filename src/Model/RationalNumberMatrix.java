@@ -154,7 +154,11 @@ public class RationalNumberMatrix {
     @Override
     public RationalNumberMatrix clone(){
         RationalNumberMatrix m = new RationalNumberMatrix(rowNum,colNum);
-        m.matrix = matrix.clone();
+        for(int r=0;r<rowNum;r++){
+            for(int c=0;c<colNum;c++){
+                m.matrix[r][c] = matrix[r][c].clone();
+            }
+        }
         return m;
     }
 
@@ -267,5 +271,19 @@ public class RationalNumberMatrix {
     public void setRow(int index, RationalNumber[] newRow){
         assert(index>=0 && index<rowNum):"The index has to be between 0 and rowNum-1";
         matrix[index] = newRow;
+    }
+
+    public boolean doesColumnContainOneOnly(int index){
+        assert(index>=0 && index<colNum):"The index has to be between 0 and colNum-1";
+        int countOne=0;
+        int countZero=0;
+        for(int r=0;r<rowNum;r++){
+            if(matrix[r][index].equals(RationalNumber.ONE)){
+                countOne++;
+            }else if(matrix[r][index].equals(RationalNumber.ZERO)){
+                countZero++;
+            }
+        }
+        return countOne==1 && countZero==rowNum-1;
     }
 }

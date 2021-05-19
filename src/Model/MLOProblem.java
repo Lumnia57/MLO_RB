@@ -14,7 +14,7 @@ public class MLOProblem {
     private int nbVar;
     public static Integer LE = 0;
     public static Integer EQ = 1;
-    public static Integer LG = 2;
+    public static Integer GE = 2;
 
     /**
      * Constructor.

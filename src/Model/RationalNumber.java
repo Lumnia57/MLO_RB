@@ -18,6 +18,9 @@ public class RationalNumber
     //-----------------------------------------------------------------
     public RationalNumber (int numer, int denom)
     {
+        if (numer == 0)
+            denom = 1;
+
         if (denom == 0)
             denom = 1;
 
@@ -30,6 +33,17 @@ public class RationalNumber
 
         numerator = numer;
         denominator = denom;
+
+        reduce();
+    }
+
+    public RationalNumber (double d){
+        denominator = 1;
+        while(d%1!=0){
+            d*=10;
+            denominator *= 10;
+        }
+        numerator = (int)d;
 
         reduce();
     }
@@ -179,10 +193,28 @@ public class RationalNumber
         return res;
     }
 
+    public boolean isLessThan(RationalNumber op2){
+        boolean res = false;
+        if(this.numerator<0 && op2.numerator>=0)
+            res = true;
+        if(this.numerator>=0 && op2.numerator>=0 || this.numerator<=0 && op2.numerator<=0){
+            int numerator1 = this.numerator*op2.denominator;
+            int numerator2 = op2.numerator*this.denominator;
+            res = numerator1<numerator2;
+        }
+
+        return res;
+    }
+
     public RationalNumber absoluteValue(){
         int newNum = numerator;
         if(newNum<0)
             newNum *= -1;
         return new RationalNumber(newNum,denominator);
+    }
+
+    @Override
+    public RationalNumber clone(){
+        return new RationalNumber(numerator,denominator);
     }
 }

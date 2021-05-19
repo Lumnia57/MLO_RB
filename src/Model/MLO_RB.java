@@ -3,15 +3,18 @@ package Model;
 public class MLO_RB {
     private RationalNumberMatrix matrixStart;
     private String objFun;
+    private int nbVariables;
 
     /**
      * Constructor.
      * @param matrix The MLO problem in the form of a matrix.
      * @param objFun The objective function in a String.
+     * @param nbVariables The number of varaibles in the MLO problem.
      */
-    public MLO_RB(RationalNumberMatrix matrix, String objFun) {
+    public MLO_RB(RationalNumberMatrix matrix, String objFun, int nbVariables) {
         this.matrixStart = matrix;
         this.objFun = objFun;
+        this.nbVariables = nbVariables;
     }
 
     /**
@@ -23,7 +26,7 @@ public class MLO_RB {
         System.out.println("\nmin " + objFun+"\n");
         boolean quit = false;
 
-        Simplex simplex = new Simplex(matrixStart);
+        Simplex simplex = new Simplex(matrixStart,nbVariables);
 
         while(!quit){
             Simplex.RESULT res = simplex.compute();
@@ -38,5 +41,10 @@ public class MLO_RB {
                 quit = true;
             }
         }
+    }
+
+    public void checkFeasibility(MLOProblem mloProblem){
+        PhaseOne p = new PhaseOne(mloProblem,matrixStart);
+        p.compute();
     }
 }
