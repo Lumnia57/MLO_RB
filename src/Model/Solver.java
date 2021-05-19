@@ -30,6 +30,7 @@ public class Solver {
         try {
             // Create a problem with 4 variables and 0 constraints
             LpSolve solver = LpSolve.makeLp(0, mloProblem.getNbVar());
+            solver.setVerbose(3);
 
             int nbCons = mloProblem.getValues().size();
             int consType;

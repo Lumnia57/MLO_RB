@@ -37,8 +37,9 @@ public class MLO_RB {
                 System.out.println(simplex.getResult());
             }
             else if(res == Simplex.RESULT.UNBOUNDED){
-                System.out.println("---Solution is unbounded---");
                 quit = true;
+                System.out.println("---Solution is unbounded---");
+                System.out.println(simplex.getResult());
             }
         }
     }

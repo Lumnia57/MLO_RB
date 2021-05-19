@@ -5,8 +5,7 @@ public class Simplex {
     private int rows, cols;
     private boolean solutionIsUnbounded = false;
     private int nbVariables;
-    private int nbIterTestMax = 5;
-    private int nbIterTest = 0;
+    private int firstUnboundedColumn;
 
     /**
      * Constructor.
@@ -38,7 +37,7 @@ public class Simplex {
         // step 2
         // find the entering column
         int pivotColumn = findEnteringColumn();
-        System.out.println("Pivot Column: "+pivotColumn);
+        //System.out.println("Pivot Column: "+pivotColumn);
 
         // step 3
         // find departing value
@@ -46,18 +45,13 @@ public class Simplex {
         if(solutionIsUnbounded)
             return RESULT.UNBOUNDED;
         int pivotRow = findSmallestValue(ratios);
-        System.out.println("Pivot row: "+ pivotRow);
+        //System.out.println("Pivot row: "+ pivotRow);
 
         // step 4
         // form the next matrix
         formNextMatrix(pivotRow, pivotColumn);
 
-        System.out.println("-------");System.out.println(matrix);
-
-        if(nbIterTest==nbIterTestMax)
-            return RESULT.UNBOUNDED;
-
-        nbIterTest++;
+        //System.out.println("-------");System.out.println(matrix);
 
         // since we formed a new table so return NOT_OPTIMAL
         return RESULT.NOT_OPTIMAL;
@@ -111,18 +105,20 @@ public class Simplex {
 
         int allNegativeCount = 0;
         for(int i = 0; i < rows-1; i++){
-            if(!matrix.get(i,column).isLessThanOrEqualTo(RationalNumber.ZERO)){ //matrix[i][column] > 0
+            if(RationalNumber.ZERO.isLessThan(matrix.get(i,column))){ //0 < matrix[i][column]
                 positiveEntries[i] = matrix.get(i,column);
             }
             else{
                 positiveEntries[i] = RationalNumber.ZERO;
                 allNegativeCount++;
             }
-            //System.out.println(positiveEntries[i]);
         }
 
-        if(allNegativeCount == rows-1)
+        if(allNegativeCount == rows-1){
             this.solutionIsUnbounded = true;
+            this.firstUnboundedColumn = column;
+        }
+
         else{
             for(int i = 0;  i < rows-1; i++){
                 RationalNumber val = positiveEntries[i];
@@ -213,7 +209,6 @@ public class Simplex {
         for(int i = 0; i < cols-1; i++){
             RationalNumber val = matrix.get(rows-1,i);
             if(val.isLessThanOrEqualTo(RationalNumber.ZERO)){ // val <= 0
-            //if(RationalNumber.ZERO.isLessThanOrEqualTo(val)){ // 0 <= val
                 vCount++;
             }
         }
@@ -229,26 +224,33 @@ public class Simplex {
         StringBuilder str = new StringBuilder();
         str.append("Matrix:\n");
         str.append(matrix.toString());
-        str.append("\n\nValue of objective function: ");
-        str.append(matrix.get(rows-1,cols-1));
-        str.append("\n");
 
-        // variables' values
-        boolean flag;
-        for(int i=0;i<nbVariables;i++){
-            flag = false;
-            if(matrix.doesColumnContainOneOnly(i)){
-                for(int j=0;j<rows;j++){
-                    if(matrix.get(j,i).equals(RationalNumber.ONE)){
-                        str.append("Value of var["+i+"] = "+matrix.get(j,cols-1)+"\n");
-                        flag = true;
+
+        if(!solutionIsUnbounded){
+            str.append("\n\nValue of objective function: ");
+            str.append(matrix.get(rows-1,cols-1));
+            str.append("\n");
+            // variables' values
+            boolean flag;
+            for(int i=0;i<nbVariables;i++){
+                flag = false;
+                if(matrix.doesColumnContainOneOnly(i)){
+                    for(int j=0;j<rows;j++){
+                        if(matrix.get(j,i).equals(RationalNumber.ONE)){
+                            str.append("Value of var["+i+"] = "+matrix.get(j,cols-1)+"\n");
+                            flag = true;
+                        }
                     }
                 }
+                if(!flag){
+                    str.append("Value of var["+i+"] = 0\n");
+                }
             }
-            if(!flag){
-                str.append("Value of var["+i+"] = 0\n");
-            }
+        }else{ // solution is unbounded
+            str.append("\n\nValue of objective function: "+Integer.MAX_VALUE+"\n");
+            str.append("Value of var["+firstUnboundedColumn+"] is unbounded\n");
         }
+
 
         return str.toString();
     }
