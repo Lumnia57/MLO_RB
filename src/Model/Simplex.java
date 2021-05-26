@@ -1,11 +1,14 @@
 package Model;
 
+/**
+ * @author Raphaël Bagat
+ * @version 0.6
+ */
 public class Simplex {
     private RationalNumberMatrix matrix;
     private int rows, cols;
     private boolean solutionIsUnbounded = false;
     private int nbVariables;
-    private int firstUnboundedColumn;
 
     /**
      * Constructor.
@@ -116,7 +119,6 @@ public class Simplex {
 
         if(allNegativeCount == rows-1){
             this.solutionIsUnbounded = true;
-            this.firstUnboundedColumn = column;
         }
 
         else{
@@ -161,7 +163,7 @@ public class Simplex {
         int c, location = 0;
 
         for(c=0;c<data.length && minimum==null;c++){
-            if(!data[c].isLessThanOrEqualTo(RationalNumber.ZERO)){
+            if(!data[c].isLessThanOrEqualTo(RationalNumber.ZERO)){ //data[c] > 0
                 minimum = data[c];
                 location  = c;
             }
@@ -180,12 +182,12 @@ public class Simplex {
     }
 
     /**
-     * Finds the index of the largest value in an array
+     * Finds the index of the largest value in an array.
      * @param data The array.
      * @return The index of the largest value in the array.
      */
     private int findLargestValue(RationalNumber[] data){
-        int c = 0, location = 0;
+        int c, location = 0;
         RationalNumber maximum = data[0];
 
         for(c = 1; c < data.length; c++){
@@ -199,7 +201,7 @@ public class Simplex {
     }
 
     /**
-     * Checks if the matrix is optimal
+     * Checks if the matrix is optimal.
      * @return True if the matrix is optimal, else false.
      */
     public boolean checkOptimality(){
@@ -220,11 +222,16 @@ public class Simplex {
         return isOptimal;
     }
 
+    /**
+     * Get the result in a String. Use it only when done computing.
+     * @return The result in a String.
+     */
     public String getResult(){
         StringBuilder str = new StringBuilder();
+        /*
         str.append("Matrix:\n");
         str.append(matrix.toString());
-
+        */
 
         if(!solutionIsUnbounded){
             str.append("\n\nValue of objective function: ");
@@ -247,8 +254,7 @@ public class Simplex {
                 }
             }
         }else{ // solution is unbounded
-            str.append("\n\nValue of objective function: "+Integer.MAX_VALUE+"\n");
-            str.append("Value of var["+firstUnboundedColumn+"] is unbounded\n");
+            str.append("\n\nSolution is unbounded\n");
         }
 
 

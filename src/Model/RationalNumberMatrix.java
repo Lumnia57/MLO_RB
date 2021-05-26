@@ -273,6 +273,12 @@ public class RationalNumberMatrix {
         matrix[index] = newRow;
     }
 
+    /**
+     * Checks if a column is filled with a single 1 and 0s.
+     * @param index The index of the column.
+     * @return True if the column is filled with a single 1 and 0s, else false.
+     * @throws AssertionError The index has to be between 0 and colNum-1.
+     */
     public boolean doesColumnContainOneOnly(int index){
         assert(index>=0 && index<colNum):"The index has to be between 0 and colNum-1";
         int countOne=0;

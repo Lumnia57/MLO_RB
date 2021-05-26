@@ -1,13 +1,14 @@
 import Model.*;
 
-// REGLER PROBLEME AVEC >=
 public class Main {
     public static void main(String[] args) {
         //testWorkingCase4Variables3Constraints();
         //testWorkingCase3Variables4Constraints();
         //testWorkingCaseWithUnboundedSolution();
-        //testUnfeasibleCase();
-        testExponentialCase();
+        //testInfeasibleCase();
+        //testExponentialCase();
+
+        test();
     }
 
     public static void testWorkingCase4Variables3Constraints(){
@@ -50,7 +51,7 @@ public class Main {
         System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
     }
 
-    public static void testUnfeasibleCase(){
+    public static void testInfeasibleCase(){
         MLOProblem mloProblem = new MLOProblem(3);
         mloProblem.addConstraint("1 1 6",MLOProblem.LE,5);
         mloProblem.addConstraint("-1 -1 8",MLOProblem.LE,-6);
@@ -74,6 +75,20 @@ public class Main {
         mloProblem.addConstraint("512 256 128 64 32 16 8 4 1 0",MLOProblem.LE,1953125);
         mloProblem.addConstraint("1024 512 256 128 64 32 16 8 4 1",MLOProblem.LE,9765625);
         mloProblem.setObjFun("-512 -256 -128 -64 -32 -16 -8 -4 -2 -1");
+
+        Solver solver = new Solver(mloProblem);
+        System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();
+        System.out.println("\n--------SOLVING MLO_RB--------");solver.solveUsingMLO_RB();
+        System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
+    }
+
+    public static void test(){
+        MLOProblem mloProblem = new MLOProblem(4);
+        mloProblem.addConstraint("1 -1 1 -1",MLOProblem.GE,-4); // x + y >= -4
+        mloProblem.addConstraint("3 -3 -2 2",MLOProblem.GE,-35); // 3x - 2y >= -35
+        mloProblem.addConstraint("0 0 1 -1",MLOProblem.LE,50); // y <= 50
+        mloProblem.addConstraint("0 0 1 -1",MLOProblem.GE,-50); // y >= 50
+        mloProblem.setObjFun("1 -1 3 -3"); // min x + 3y
 
         Solver solver = new Solver(mloProblem);
         System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();

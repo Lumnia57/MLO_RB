@@ -8,7 +8,7 @@ import java.util.LinkedList;
  */
 public class MLOProblem {
     private LinkedList<String> values;
-    private LinkedList<String> B; //changer le nom
+    private LinkedList<String> B;
     private LinkedList<Integer> types;
     private String objFun;
     private int nbVar;
@@ -57,8 +57,8 @@ public class MLOProblem {
     }
 
     /**
-     * Gets the values of the right hand sides.
-     * @return The values of the right hand sides.
+     * Gets the values of the right hand side vales.
+     * @return The values of the right hand side values.
      */
     public LinkedList<String> getB() {
         return B;

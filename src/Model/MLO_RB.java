@@ -1,29 +1,25 @@
 package Model;
 
+/**
+ * @author Raphaël Bagat
+ * @version 1.0
+ */
 public class MLO_RB {
-    private RationalNumberMatrix matrixStart;
-    private String objFun;
-    private int nbVariables;
-
     /**
      * Constructor.
-     * @param matrix The MLO problem in the form of a matrix.
-     * @param objFun The objective function in a String.
-     * @param nbVariables The number of varaibles in the MLO problem.
      */
-    public MLO_RB(RationalNumberMatrix matrix, String objFun, int nbVariables) {
-        this.matrixStart = matrix;
-        this.objFun = objFun;
-        this.nbVariables = nbVariables;
-    }
+    public MLO_RB() { }
 
     /**
      * Solves the MLO problem using the simplex method and prints the solution in the standard ouput.
+     * The MLO problem has to be feasible.
      */
-    public void solve(){
+    public void solve(RationalNumberMatrix matrixStart, String objFun, int nbVariables){
+        /*
         System.out.println("Initial matrix:");
         System.out.println(matrixStart);
         System.out.println("\nmin " + objFun+"\n");
+        */
         boolean quit = false;
 
         Simplex simplex = new Simplex(matrixStart,nbVariables);
@@ -31,21 +27,20 @@ public class MLO_RB {
         while(!quit){
             Simplex.RESULT res = simplex.compute();
 
-            if(res == Simplex.RESULT.IS_OPTIMAL){
+            if(res == Simplex.RESULT.IS_OPTIMAL || res == Simplex.RESULT.UNBOUNDED){
                 quit = true;
-                System.out.println("---Result:---");
-                System.out.println(simplex.getResult());
-            }
-            else if(res == Simplex.RESULT.UNBOUNDED){
-                quit = true;
-                System.out.println("---Solution is unbounded---");
                 System.out.println(simplex.getResult());
             }
         }
     }
 
+    /**
+     * Checks if the MLO problem given as parameter is feasible.
+     * @param mloProblem The MLO problem.
+     */
     public void checkFeasibility(MLOProblem mloProblem){
-        PhaseOne p = new PhaseOne(mloProblem,matrixStart);
+        PhaseOne p = new PhaseOne(mloProblem.getB(),mloProblem.getTypes(),mloProblem.getNbRows(),mloProblem.getNbVar(),ProblemToMatrixTransformation.problemToNormalizedProblemMatrixForPhaseOne(mloProblem));
         p.compute();
+        System.out.println(p.getResult());
     }
 }
