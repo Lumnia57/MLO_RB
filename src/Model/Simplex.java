@@ -9,19 +9,23 @@ public class Simplex {
     private int rows, cols;
     private boolean solutionIsUnbounded = false;
     private int nbVariables;
+    private boolean isDual;
 
     /**
      * Constructor.
      * @param m The beginning matrix of the method.
+     * @param nbVariables The number of variables in the problem.
+     * @param isDual True if we are solving the dual method, false else.
      */
-    public Simplex(RationalNumberMatrix m, int nbVariables){
+    public Simplex(RationalNumberMatrix m, int nbVariables, boolean isDual){
         matrix = m.clone();
         rows = m.getRowNum();
         cols = m.getColNum();
         this.nbVariables = nbVariables;
+        this.isDual = isDual;
     }
 
-    public static enum RESULT{
+    public enum RESULT{
         NOT_OPTIMAL,
         IS_OPTIMAL,
         UNBOUNDED
@@ -233,30 +237,52 @@ public class Simplex {
         str.append(matrix.toString());
         */
 
-        if(!solutionIsUnbounded){
-            str.append("\n\nValue of objective function: ");
-            str.append(matrix.get(rows-1,cols-1));
-            str.append("\n");
-            // variables' values
-            boolean flag;
-            for(int i=0;i<nbVariables;i++){
-                flag = false;
-                if(matrix.doesColumnContainOneOnly(i)){
-                    for(int j=0;j<rows;j++){
-                        if(matrix.get(j,i).equals(RationalNumber.ONE)){
-                            str.append("Value of var["+i+"] = "+matrix.get(j,cols-1)+"\n");
-                            flag = true;
+        if(!isDual){
+            if(!solutionIsUnbounded){
+                str.append("\n\nValue of objective function: ");
+                str.append(matrix.get(rows-1,cols-1));
+                str.append("\n");
+                RationalNumber[] res = new RationalNumber[nbVariables];
+                // variables' values
+                boolean flag;
+                for(int i=0;i<nbVariables;i++){
+                    flag = false;
+                    if(matrix.doesColumnContainOneOnly(i)){
+                        for(int j=0;j<rows;j++){
+                            if(matrix.get(j,i).equals(RationalNumber.ONE)){
+                                //str.append("Value of var["+i+"] = "+matrix.get(j,cols-1))+"\n");
+                                res[i] = matrix.get(j,cols-1);
+                                flag = true;
+                            }
                         }
                     }
+                    if(!flag){
+                        //str.append("Value of var["+i+"] = 0\n");
+                        res[i] = RationalNumber.ZERO;
+                    }
                 }
-                if(!flag){
-                    str.append("Value of var["+i+"] = 0\n");
+                for(int i=0;i<nbVariables;i+=2){
+                    str.append("Value of var["+(i/2)+"] = "+res[i].subtract(res[i+1])+"\n");
+                }
+            }else{ // solution is unbounded
+                str.append("\n\nSolution is unbounded\n");
+            }
+        }else{ // isDual = true
+            if(solutionIsUnbounded){
+                str.append("\n\nThe problem is infeasible\n");
+            }else{
+                str.append("\n\nValue of objective function: ");
+                str.append(matrix.get(rows-1,cols-1).multiply(RationalNumber.MINUS_ONE));
+                str.append("\n");
+
+                int count = 0;
+                // variables' values
+                for(int i=nbVariables;count<rows-1;i++){
+                    str.append("Value of var["+count+"] = "+matrix.get(rows-1,i).multiply(RationalNumber.MINUS_ONE)+"\n");
+                    count++;
                 }
             }
-        }else{ // solution is unbounded
-            str.append("\n\nSolution is unbounded\n");
         }
-
 
         return str.toString();
     }

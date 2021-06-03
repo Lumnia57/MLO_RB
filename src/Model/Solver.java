@@ -25,7 +25,7 @@ public class Solver {
         try {
             // Create a problem with 4 variables and 0 constraints
             LpSolve solver = LpSolve.makeLp(0, mloProblem.getNbVar());
-            solver.setVerbose(3);
+            //solver.setVerbose(3);
 
             int nbCons = mloProblem.getValues().size();
             int consType;
@@ -71,15 +71,15 @@ public class Solver {
      * Solves the MLO problem using MLO_RB and prints the results in the standard output.
      */
     public void solveUsingMLO_RB(){
-        MLO_RB mlo_rb = new MLO_RB();
-        mlo_rb.solve(ProblemToMatrixTransformation.problemToNormalizedProblemMatrix(mloProblem),mloProblem.getObjFun(),mloProblem.getNbVar());
+        MLO_RB mlo_rb = new MLO_RB(mloProblem);
+        mlo_rb.solve();
     }
 
     /**
      * Check if the MLO problem is feasible using MLO_RB and prints the result in the standard output.
      */
     public void checkFeasibilityUsingMLO_RB(){
-        MLO_RB mlo_rb = new MLO_RB();
-        mlo_rb.checkFeasibility(mloProblem.clone());
+        MLO_RB mlo_rb = new MLO_RB(mloProblem);
+        mlo_rb.checkFeasibility();
     }
 }

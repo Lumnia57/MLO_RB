@@ -28,7 +28,7 @@ public class Main {
     public static void testWorkingCase3Variables4Constraints(){
         MLOProblem mloProblem = new MLOProblem(3);
         mloProblem.addConstraint("8 6 -2",MLOProblem.LE,65);
-        mloProblem.addConstraint("1 -2 4",MLOProblem.LE,26);
+        mloProblem.addConstraint("1 -2 4",MLOProblem.LE,24);
         mloProblem.addConstraint("0 2 3",MLOProblem.LE,59);
         mloProblem.addConstraint("-2 6 0",MLOProblem.LE,23);
         mloProblem.setObjFun("-95 -84 -6");
@@ -83,16 +83,20 @@ public class Main {
     }
 
     public static void test(){
-        MLOProblem mloProblem = new MLOProblem(4);
-        mloProblem.addConstraint("1 -1 1 -1",MLOProblem.GE,-4); // x + y >= -4
-        mloProblem.addConstraint("3 -3 -2 2",MLOProblem.GE,-35); // 3x - 2y >= -35
-        mloProblem.addConstraint("0 0 1 -1",MLOProblem.LE,50); // y <= 50
-        mloProblem.addConstraint("0 0 1 -1",MLOProblem.GE,-50); // y >= 50
-        mloProblem.setObjFun("1 -1 3 -3"); // min x + 3y
+
+        MLOProblem mloProblem = new MLOProblem(2);
+        mloProblem.addConstraint("1 0",MLOProblem.LE,1);
+        mloProblem.addConstraint("0 1",MLOProblem.LE,1);
+        mloProblem.setObjFun("-1 0");
 
         Solver solver = new Solver(mloProblem);
         System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();
         System.out.println("\n--------SOLVING MLO_RB--------");solver.solveUsingMLO_RB();
         System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
+
+        /*
+        probleme avec lp-solve qui ajoute pas les variables
+        probleme avec checking feasibility
+        */
     }
 }

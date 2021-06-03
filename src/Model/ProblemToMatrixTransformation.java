@@ -11,13 +11,14 @@ import java.util.regex.Pattern;
 public class ProblemToMatrixTransformation {
     /**
      * Converts the problem to a RationalNumberMatrix.
+     * @param mloProblemP The MLO problem.
      * @return The problem converted to a RationalNumberMatrix.
      */
     public static RationalNumberMatrix problemToNormalizedProblemMatrix(MLOProblem mloProblemP){
         MLOProblem mloProblem = mloProblemP.clone();
         int numAddedVariables = mloProblem.getNbRows();
         int rowNum = mloProblem.getNbRows() + 1;
-        int colNum = mloProblem.getNbVar() + 1 + numAddedVariables;
+        int colNum = mloProblem.getNbVar()*2 + 1 + numAddedVariables; // change here to add negative variables
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
         LinkedList<String> sl = new LinkedList<>();
@@ -85,6 +86,7 @@ public class ProblemToMatrixTransformation {
             /* string list to rational number list */
             p = Pattern.compile("[-]?[0-9]+");
             count = 0;
+            int countVar = 0;
             for(String s2 : sl){
                 m = p.matcher(s2);
                 while (m.find()){
@@ -94,13 +96,22 @@ public class ProblemToMatrixTransformation {
                         }else{
                             denom = Integer.parseInt(m.group(0));
                             rl.addLast(new RationalNumber(num,denom));
+                            if(countVar<mloProblem.getNbVar()){
+                                rl.addLast(new RationalNumber(num,denom).multiply(RationalNumber.MINUS_ONE));
+                            }
+                            countVar++;
                         }
                         count++;
                     }else{
                         num = Integer.parseInt(m.group(0));
                         denom = 1;
                         rl.addLast(new RationalNumber(num,denom));
+                        if(countVar<mloProblem.getNbVar()){
+                            rl.addLast(new RationalNumber(num,denom).multiply(RationalNumber.MINUS_ONE));
+                        }
+                        countVar++;
                     }
+
                 }
             }
 
@@ -126,6 +137,65 @@ public class ProblemToMatrixTransformation {
         for(int i=0;i<matrix.getColNum();i++){
             matrix.set(matrix.getRowNum()-1,i,matrix.get(matrix.getRowNum()-1,i).multiply(RationalNumber.MINUS_ONE));
         }
+
+        return matrix;
+    }
+
+    /**
+     * Converts the problem to its dual problem's RationalNumberMatrix.
+     * @param mloProblemP The MLO problem.
+     * @return The problem converted to its dual problem's RationalNumberMatrix.
+     */
+    public static RationalNumberMatrix problemToDualProblemMatrix(MLOProblem mloProblemP){
+        RationalNumberMatrix primalMatrix = problemToNormalizedProblemMatrix(mloProblemP.clone());
+        MLOProblem mloProblem = mloProblemP.clone();
+
+        // converts <= in primal to >=
+        for(int i=0;i<primalMatrix.getRowNum()-1;i++){
+            primalMatrix.multiplyRowByScalar(i,RationalNumber.MINUS_ONE);
+        }
+
+        // dual problem data
+        int nbVar = primalMatrix.getRowNum()-1;
+        int nbCons = mloProblem.getNbVar();
+
+        RationalNumberMatrix matrix = new RationalNumberMatrix(nbCons+1,nbVar+nbCons+1);
+
+        // dual problem's contrainsts
+        for(int c=0;c<(primalMatrix.getColNum()-1)/2;c++){
+            for(int r=0;r<primalMatrix.getRowNum()-1;r++){
+                matrix.set(c,r,primalMatrix.get(r,c));
+            }
+        }
+
+        // dual problem's objective function
+        for(int c=0;c<mloProblem.getNbRows();c++){
+            matrix.set(nbCons,c,primalMatrix.get(c,primalMatrix.getColNum()-1));
+        }
+
+        //dual problem's right hand side's values
+        for(int r=0;r<nbCons;r++){
+            matrix.set(r,nbVar+nbCons,primalMatrix.get(primalMatrix.getRowNum()-1,r));
+        }
+
+        // fill the last row with 0s
+        for(int c=nbVar;c<matrix.getColNum();c++){
+            matrix.set(nbCons,c,RationalNumber.ZERO);
+        }
+
+        // add the slack variables
+        for(int c=nbVar;c<matrix.getColNum()-1;c++){
+            for(int r=0;r<nbCons;r++){
+                if(c-nbVar==r){
+                    matrix.set(r,c,RationalNumber.ONE);
+                }else{
+                    matrix.set(r,c,RationalNumber.ZERO);
+                }
+            }
+        }
+
+        // multiply the last column by -1
+        matrix.multiplyColumnByScalar(matrix.getColNum()-1,RationalNumber.MINUS_ONE);
 
         return matrix;
     }
