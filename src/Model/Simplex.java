@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.Arrays;
+
 /**
  * @author Raphaël Bagat
  * @version 0.6
@@ -10,6 +12,7 @@ public class Simplex {
     private boolean solutionIsUnbounded = false;
     private int nbVariables;
     private boolean isDual;
+    private Integer[] notLowerBoundedVariableIndexes;
 
     /**
      * Constructor.
@@ -17,12 +20,13 @@ public class Simplex {
      * @param nbVariables The number of variables in the problem.
      * @param isDual True if we are solving the dual method, false else.
      */
-    public Simplex(RationalNumberMatrix m, int nbVariables, boolean isDual){
+    public Simplex(RationalNumberMatrix m, int nbVariables, boolean isDual, Integer[] notLowerBoundedVariableIndexes){
         matrix = m.clone();
         rows = m.getRowNum();
         cols = m.getColNum();
         this.nbVariables = nbVariables;
         this.isDual = isDual;
+        this.notLowerBoundedVariableIndexes = notLowerBoundedVariableIndexes;
     }
 
     public enum RESULT{
@@ -261,8 +265,19 @@ public class Simplex {
                         res[i] = RationalNumber.ZERO;
                     }
                 }
-                for(int i=0;i<nbVariables;i+=2){
-                    str.append("Value of var["+(i/2)+"] = "+res[i].subtract(res[i+1])+"\n");
+                int countVar = 0;
+                for(int i=0;i<nbVariables;i++){
+                    if(notLowerBoundedVariableIndexes!=null){
+                        if(Arrays.asList(notLowerBoundedVariableIndexes).contains(countVar)){
+                            str.append("Value of var["+countVar+"] = "+res[i].subtract(res[i+1])+"\n");
+                            i++;
+                        }else{
+                            str.append("Value of var["+countVar+"] = "+res[i]+"\n");
+                        }
+                    }else{
+                        str.append("Value of var["+countVar+"] = "+res[i]+"\n");
+                    }
+                    countVar++;
                 }
             }else{ // solution is unbounded
                 str.append("\n\nSolution is unbounded\n");

@@ -5,6 +5,9 @@ package Model;
 //  Represents one rational number with a numerator and denominator.
 //********************************************************************
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class RationalNumber
 {
     private int numerator, denominator;
@@ -44,6 +47,29 @@ public class RationalNumber
             denominator *= 10;
         }
         numerator = (int)d;
+
+        reduce();
+    }
+
+    public RationalNumber(String s){
+        Pattern p;
+        Matcher m;
+        p = Pattern.compile("[-]?[0-9]+");
+        m = p.matcher(s);
+        int count = 0;
+        while (m.find()){
+            if(s.contains("/")){
+                if(count%2==0){
+                    numerator = Integer.parseInt(m.group(0));
+                }else{
+                    denominator = Integer.parseInt(m.group(0));
+                }
+                count++;
+            }else{
+                numerator = Integer.parseInt(m.group(0));
+                denominator = 1;
+            }
+        }
 
         reduce();
     }
@@ -216,5 +242,9 @@ public class RationalNumber
     @Override
     public RationalNumber clone(){
         return new RationalNumber(numerator,denominator);
+    }
+
+    public double toDouble(){
+        return (double)numerator/(double)denominator;
     }
 }

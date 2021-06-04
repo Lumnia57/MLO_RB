@@ -3,6 +3,11 @@ package Model;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Raphaël Bagat
  * @version 0.3
@@ -24,7 +29,11 @@ public class Solver {
     public void solveUsingLPSolve(){
         try {
             // Create a problem with 4 variables and 0 constraints
-            LpSolve solver = LpSolve.makeLp(0, mloProblem.getNbVar());
+            int numAddedVariables = 0;
+            if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+                numAddedVariables = mloProblem.getNotLowerBoundedVariableIndexes().length;
+            }
+            LpSolve solver = LpSolve.makeLp(0, mloProblem.getNbVar()+numAddedVariables);
             //solver.setVerbose(3);
 
             int nbCons = mloProblem.getValues().size();
@@ -43,11 +52,15 @@ public class Solver {
                         consType = LpSolve.GE;
                         break;
                 }
-                solver.strAddConstraint(mloProblem.getValues().get(i),consType, Double.parseDouble(mloProblem.getB().get(i)));
+
+                // get the right hand side value
+                RationalNumber b = new RationalNumber(mloProblem.getB().get(i));
+
+                solver.strAddConstraint(getRowWithAddedVariables(i,false),consType, b.toDouble());
             }
 
             // set objective function
-            solver.strSetObjFn(mloProblem.getObjFun());
+            solver.strSetObjFn(getRowWithAddedVariables(0,true));
 
             // solve the problem
             solver.solve();
@@ -65,6 +78,50 @@ public class Solver {
         catch (LpSolveException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getRowWithAddedVariables(int index, boolean isObjectiveFunction){
+        StringBuilder str = new StringBuilder();
+        Matcher m;
+        Pattern p;
+
+        /* row string to string list */
+        LinkedList<String> sl = new LinkedList<>();
+        LinkedList<RationalNumber> rl = new LinkedList<>();
+        p = Pattern.compile("[-]?[0-9]+([/][-]?[0-9]+)?");
+
+        if(isObjectiveFunction){
+            m = p.matcher(mloProblem.getObjFun());
+        }else{
+            m = p.matcher(mloProblem.getValues().get(index));
+        }
+
+        while (m.find()){
+            sl.addLast(m.group(0));
+        }
+        /* string list to rational number list */
+        int countVar = 0;
+        boolean flag;
+        if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+            for(String s2 : sl){
+                flag = Arrays.asList(mloProblem.getNotLowerBoundedVariableIndexes()).contains(countVar);
+                rl.addLast(new RationalNumber(s2));
+                if(flag){
+                    rl.addLast(new RationalNumber(s2).multiply(RationalNumber.MINUS_ONE));
+                }
+                countVar++;
+            }
+        }else{
+            for(String s2 : sl){
+                rl.addLast(new RationalNumber(s2));
+            }
+        }
+        for(RationalNumber n : rl){
+            str.append(n.toDouble()+" ");
+        }
+        str.deleteCharAt(str.length()-1);
+
+        return str.toString();
     }
 
     /**

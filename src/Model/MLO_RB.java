@@ -36,7 +36,7 @@ public class MLO_RB {
         }
 
         int nbVariables = matrixStart.getColNum()-matrixStart.getRowNum();
-        simplex = new Simplex(matrixStart,nbVariables,flag);
+        simplex = new Simplex(matrixStart,nbVariables,flag, mloProblem.getNotLowerBoundedVariableIndexes());
 
         while(!quit){
             Simplex.RESULT res = simplex.compute();

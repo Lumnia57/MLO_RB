@@ -1,5 +1,6 @@
 package Model;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,9 +17,13 @@ public class ProblemToMatrixTransformation {
      */
     public static RationalNumberMatrix problemToNormalizedProblemMatrix(MLOProblem mloProblemP){
         MLOProblem mloProblem = mloProblemP.clone();
-        int numAddedVariables = mloProblem.getNbRows();
+        int numSlackVariables = mloProblem.getNbRows();
         int rowNum = mloProblem.getNbRows() + 1;
-        int colNum = mloProblem.getNbVar()*2 + 1 + numAddedVariables; // change here to add negative variables
+        int numNotLowerBoundedVariables = 0;
+        if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+            numNotLowerBoundedVariables = mloProblem.getNotLowerBoundedVariableIndexes().length;
+        }
+        int colNum = mloProblem.getNbVar() + numNotLowerBoundedVariables + 1 + numSlackVariables;
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
         LinkedList<String> sl = new LinkedList<>();
@@ -26,9 +31,6 @@ public class ProblemToMatrixTransformation {
         Matcher m;
 
         LinkedList<RationalNumber> rl = new LinkedList<>();
-        int num=0;
-        int denom;
-        int count;
         int countAddedVar;
 
         int index = 0;
@@ -42,10 +44,11 @@ public class ProblemToMatrixTransformation {
             rl.clear();
             sl.clear();
             countAddedVar=0;
+            // add slack variables
             if(index<rowNum-1){
                 switch(mloProblem.getTypes().get(index)) {
-                    case 0:
-                        while (countAddedVar < numAddedVariables) {
+                    case 0: // <=
+                        while (countAddedVar < numSlackVariables) {
                             if (countAddedVar == index)
                                 s1 += " 1";
                             else
@@ -53,14 +56,14 @@ public class ProblemToMatrixTransformation {
                             countAddedVar++;
                         }
                         break;
-                    case 1:
-                        while (countAddedVar < numAddedVariables) {
+                    case 1: // =
+                        while (countAddedVar < numSlackVariables) {
                             s1 += " 0";
                             countAddedVar++;
                         }
                         break;
-                    case 2:
-                        while (countAddedVar < numAddedVariables) {
+                    case 2: // >=
+                        while (countAddedVar < numSlackVariables) {
                             if (countAddedVar == index)
                                 s1 += " -1";
                             else
@@ -70,7 +73,7 @@ public class ProblemToMatrixTransformation {
                         break;
                 }
             }else{
-                while (countAddedVar < numAddedVariables) {
+                while (countAddedVar < numSlackVariables) {
                     s1 += " 0";
                     countAddedVar++;
                 }
@@ -84,42 +87,28 @@ public class ProblemToMatrixTransformation {
             }
 
             /* string list to rational number list */
-            p = Pattern.compile("[-]?[0-9]+");
-            count = 0;
             int countVar = 0;
-            for(String s2 : sl){
-                m = p.matcher(s2);
-                while (m.find()){
-                    if(s2.contains("/")){
-                        if(count%2==0){
-                            num = Integer.parseInt(m.group(0));
-                        }else{
-                            denom = Integer.parseInt(m.group(0));
-                            rl.addLast(new RationalNumber(num,denom));
-                            if(countVar<mloProblem.getNbVar()){
-                                rl.addLast(new RationalNumber(num,denom).multiply(RationalNumber.MINUS_ONE));
-                            }
-                            countVar++;
-                        }
-                        count++;
-                    }else{
-                        num = Integer.parseInt(m.group(0));
-                        denom = 1;
-                        rl.addLast(new RationalNumber(num,denom));
-                        if(countVar<mloProblem.getNbVar()){
-                            rl.addLast(new RationalNumber(num,denom).multiply(RationalNumber.MINUS_ONE));
-                        }
-                        countVar++;
+            boolean flag;
+            if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+                for(String s2 : sl){
+                    flag = Arrays.asList(mloProblem.getNotLowerBoundedVariableIndexes()).contains(countVar);
+                    rl.addLast(new RationalNumber(s2));
+                    if(flag){
+                        rl.addLast(new RationalNumber(s2).multiply(RationalNumber.MINUS_ONE));
                     }
-
+                    countVar++;
+                }
+            }else{
+                for(String s2 : sl){
+                    rl.addLast(new RationalNumber(s2));
                 }
             }
 
             row = rl.toArray(new RationalNumber[rl.size()+1]);
-            if(index<rowNum-1){
-                row[colNum-1] = new RationalNumber((int)Double.parseDouble(mloProblem.getB().get(index)),1); /* works because B is filled with int */
+            if(index<rowNum-1){ // if it's not the last row, we get the right hand side value
+                row[colNum-1] = new RationalNumber(mloProblem.getB().get(index));
             }else{
-                row[colNum-1] = new RationalNumber(0,1);
+                row[colNum-1] = RationalNumber.ZERO;
             }
 
             matrix.addRow(row,index);
@@ -216,9 +205,6 @@ public class ProblemToMatrixTransformation {
         Matcher m;
 
         LinkedList<RationalNumber> rl = new LinkedList<>();
-        int num=0;
-        int denom;
-        int count;
         int countAddedVar;
 
         int index = 0;
@@ -248,32 +234,15 @@ public class ProblemToMatrixTransformation {
             }
 
             /* string list to rational number list */
-            p = Pattern.compile("[-]?[0-9]+");
-            count = 0;
             for(String s2 : sl){
-                m = p.matcher(s2);
-                while (m.find()){
-                    if(s2.contains("/")){
-                        if(count%2==0){
-                            num = Integer.parseInt(m.group(0));
-                        }else{
-                            denom = Integer.parseInt(m.group(0));
-                            rl.addLast(new RationalNumber(num,denom));
-                        }
-                        count++;
-                    }else{
-                        num = Integer.parseInt(m.group(0));
-                        denom = 1;
-                        rl.addLast(new RationalNumber(num,denom));
-                    }
-                }
+                rl.addLast(new RationalNumber(s2));
             }
 
             row = rl.toArray(new RationalNumber[rl.size()+1]);
             if(index<rowNum-1){
-                row[colNum-1] = new RationalNumber((int)Double.parseDouble(mloProblem.getB().get(index)),1); /* works because B is filled with int */
+                row[colNum-1] = new RationalNumber(mloProblem.getB().get(index));
             }else{
-                row[colNum-1] = new RationalNumber(0,1);
+                row[colNum-1] = RationalNumber.ZERO;
             }
 
             matrix.addRow(row,index);

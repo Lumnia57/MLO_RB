@@ -12,6 +12,7 @@ public class MLOProblem {
     private LinkedList<Integer> types;
     private String objFun;
     private int nbVar;
+    private Integer[] notLowerBoundedVariableIndexes;
     public static Integer LE = 0;
     public static Integer EQ = 1;
     public static Integer GE = 2;
@@ -26,16 +27,17 @@ public class MLOProblem {
         B = new LinkedList<>();
         types = new LinkedList<>();
         this.nbVar = nbVar;
+        notLowerBoundedVariableIndexes = null;
     }
 
     /**
      * Adds a constraint in the problem.
      * @param values A String that contains the value of the row. Format: v1 v2 v3 ...
      * @param type The type of the constraint. (Less than or equal LE, Equal EQ, Greater than or equal GE)
-     * @param b The value of the right hand side.
+     * @param b A String that contains the value of the right hand side.
      */
-    public void addConstraint(String values, int type, double b){
-        B.addLast(String.valueOf(b));
+    public void addConstraint(String values, int type, String b){
+        B.addLast(b);
         this.values.addLast(values);
         types.addLast(type);
     }
@@ -96,6 +98,17 @@ public class MLOProblem {
         return B.size();
     }
 
+    public void setNotLowerBoundedVariableIndexes(Integer... indexes){
+        for(int i : indexes){
+            assert(i>=0 && i<nbVar):"All the indexes have to be between 0 and n-1";
+        }
+        notLowerBoundedVariableIndexes = indexes;
+    }
+
+    public Integer[] getNotLowerBoundedVariableIndexes(){
+        return notLowerBoundedVariableIndexes;
+    }
+
     @Override
     public MLOProblem clone(){
         MLOProblem newPb = new MLOProblem(nbVar);
@@ -103,6 +116,12 @@ public class MLOProblem {
         newPb.B = (LinkedList<String>) B.clone();
         newPb.types = (LinkedList<Integer>) types.clone();
         newPb.objFun = objFun;
+        if(notLowerBoundedVariableIndexes!=null){
+            newPb.notLowerBoundedVariableIndexes = notLowerBoundedVariableIndexes.clone();
+        }else{
+            newPb.notLowerBoundedVariableIndexes = null;
+        }
+
 
         return newPb;
     }
