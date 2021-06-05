@@ -293,7 +293,17 @@ public class Simplex {
                 int count = 0;
                 // variables' values
                 for(int i=nbVariables;count<rows-1;i++){
-                    str.append("Value of var["+count+"] = "+matrix.get(rows-1,i).multiply(RationalNumber.MINUS_ONE)+"\n");
+                    if(notLowerBoundedVariableIndexes!=null){
+                        if(Arrays.asList(notLowerBoundedVariableIndexes).contains(count)){
+                            str.append("Value of var["+count+"] = "+matrix.get(rows-1,i).subtract(matrix.get(rows-1,i+1)).multiply(RationalNumber.MINUS_ONE)+"\n");
+                            i++;
+                        }else{
+                            str.append("Value of var["+count+"] = "+matrix.get(rows-1,i).multiply(RationalNumber.MINUS_ONE)+"\n");
+                        }
+                    }else{
+                        str.append("Value of var["+count+"] = "+matrix.get(rows-1,i).multiply(RationalNumber.MINUS_ONE)+"\n");
+                    }
+
                     count++;
                 }
             }

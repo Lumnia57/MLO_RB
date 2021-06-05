@@ -27,7 +27,7 @@ public class MLO_RB {
         // if so, we solve the dual problem.
         boolean flag = true;
         for(int c=0;c<matrixStart.getColNum()-1 && flag;c++){
-            flag = flag && matrixStart.get(matrixStart.getRowNum()-1,c).isLessThanOrEqualTo(RationalNumber.ZERO);
+            flag = matrixStart.get(matrixStart.getRowNum() - 1,c).isLessThanOrEqualTo(RationalNumber.ZERO);
         }
 
         Simplex simplex;

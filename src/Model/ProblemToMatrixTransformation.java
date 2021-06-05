@@ -146,12 +146,19 @@ public class ProblemToMatrixTransformation {
 
         // dual problem data
         int nbVar = primalMatrix.getRowNum()-1;
-        int nbCons = mloProblem.getNbVar();
+
+        int numAddedVariables = 0;
+        if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+            numAddedVariables = mloProblem.getNotLowerBoundedVariableIndexes().length;
+        }
+        int nbCons = mloProblem.getNbVar() + numAddedVariables;
+
+        int nbVarPrimal = nbCons;
 
         RationalNumberMatrix matrix = new RationalNumberMatrix(nbCons+1,nbVar+nbCons+1);
 
         // dual problem's contrainsts
-        for(int c=0;c<(primalMatrix.getColNum()-1)/2;c++){
+        for(int c=0;c<nbVarPrimal;c++){
             for(int r=0;r<primalMatrix.getRowNum()-1;r++){
                 matrix.set(c,r,primalMatrix.get(r,c));
             }
@@ -195,9 +202,13 @@ public class ProblemToMatrixTransformation {
      */
     public static RationalNumberMatrix problemToNormalizedProblemMatrixForPhaseOne(MLOProblem mloProblemP){
         MLOProblem mloProblem = mloProblemP.clone();
-        int numAddedVariables = mloProblem.getNbRows();
+        int numSlackVariables = mloProblem.getNbRows();
         int rowNum = mloProblem.getNbRows() + 1;
-        int colNum = mloProblem.getNbVar() + 1 + numAddedVariables;
+        int numNotLowerBoundedVariables = 0;
+        if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+            numNotLowerBoundedVariables = mloProblem.getNotLowerBoundedVariableIndexes().length;
+        }
+        int colNum = mloProblem.getNbVar() + numNotLowerBoundedVariables + 1 + numSlackVariables;
         RationalNumberMatrix matrix = new RationalNumberMatrix(rowNum,colNum);
 
         LinkedList<String> sl = new LinkedList<>();
@@ -218,7 +229,7 @@ public class ProblemToMatrixTransformation {
             rl.clear();
             sl.clear();
             countAddedVar=0;
-            while (countAddedVar < numAddedVariables) {
+            while (countAddedVar < numSlackVariables) {
                 if (countAddedVar == index)
                     s1 += " 1";
                 else
@@ -234,8 +245,19 @@ public class ProblemToMatrixTransformation {
             }
 
             /* string list to rational number list */
+            int countVar = 0;
+            boolean flag;
             for(String s2 : sl){
-                rl.addLast(new RationalNumber(s2));
+                if(mloProblem.getNotLowerBoundedVariableIndexes()!=null){
+                    flag = Arrays.asList(mloProblem.getNotLowerBoundedVariableIndexes()).contains(countVar);
+                    rl.addLast(new RationalNumber(s2));
+                    if(flag){
+                        rl.addLast(new RationalNumber(s2).multiply(RationalNumber.MINUS_ONE));
+                    }
+                    countVar++;
+                }else{
+                    rl.addLast(new RationalNumber(s2));
+                }
             }
 
             row = rl.toArray(new RationalNumber[rl.size()+1]);

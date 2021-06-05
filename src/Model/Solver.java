@@ -34,7 +34,7 @@ public class Solver {
                 numAddedVariables = mloProblem.getNotLowerBoundedVariableIndexes().length;
             }
             LpSolve solver = LpSolve.makeLp(0, mloProblem.getNbVar()+numAddedVariables);
-            //solver.setVerbose(3);
+            solver.setVerbose(3);
 
             int nbCons = mloProblem.getValues().size();
             int consType;

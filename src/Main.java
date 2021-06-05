@@ -7,6 +7,7 @@ public class Main {
         //testWorkingCaseWithUnboundedSolution();
         //testInfeasibleCase();
         //testExponentialCase();
+        //testNotLowedBoundedVariable();
 
         test();
     }
@@ -159,10 +160,9 @@ public class Main {
         */
     }
 
-    public static void test(){
-
+    public static void testNotLowedBoundedVariable(){
         MLOProblem mloProblem = new MLOProblem(3);
-        mloProblem.setNotLowerBoundedVariableIndexes(0,1,2);
+        mloProblem.setNotLowerBoundedVariableIndexes(2);
         mloProblem.addConstraint("-9 1 8",MLOProblem.GE,"4");
         mloProblem.addConstraint("3 -2 4",MLOProblem.LE,"35");
         mloProblem.addConstraint("1 0 0",MLOProblem.LE,"10");
@@ -174,40 +174,44 @@ public class Main {
         mloProblem.setObjFun("1 -3 2");
 
         Solver solver = new Solver(mloProblem);
-        //System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();
-        //System.out.println("\n--------SOLVING MLO_RB--------");solver.solveUsingMLO_RB();
-        //System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
-
-
-        System.out.println(ProblemToMatrixTransformation.problemToNormalizedProblemMatrix(mloProblem));
-        System.out.println(ProblemToMatrixTransformation.problemToNormalizedProblemMatrixForPhaseOne(mloProblem));
-
-    /*
-        mloProblem = new MLOProblem(6);
-        mloProblem.addConstraint("-9 9 1 -1 8 -8",MLOProblem.GE,"4");
-        mloProblem.addConstraint("3 -3 -2 2 4 -4",MLOProblem.LE,"35");
-        mloProblem.addConstraint("1 -1 0 0 0 0",MLOProblem.LE,"10");
-        mloProblem.addConstraint("1 -1 0 0 0 0",MLOProblem.GE,"-10");
-        mloProblem.addConstraint("0 0 1 -1 0 0",MLOProblem.LE,"10");
-        mloProblem.addConstraint("0 0 1 -1 0 0",MLOProblem.GE,"-10");
-        mloProblem.addConstraint("0 0 0 0 1 -1",MLOProblem.LE,"10");
-        mloProblem.addConstraint("0 0 0 0 1 -1",MLOProblem.GE,"-10");
-        mloProblem.setObjFun("1 -1 -3 3 2 -2");
-        solver = new Solver(mloProblem);
-
         System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();
         System.out.println("\n--------SOLVING MLO_RB--------");solver.solveUsingMLO_RB();
         System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
 
-
-     */
-
-
-
-
         /*
-        probleme avec lp-solve qui ajoute pas les variables
-        probleme avec checking feasibility
+        --------CHECKING FEASIBILITY--------
+        The problem is feasible.
+        --------SOLVING MLO_RB--------
+        Value of objective function: -63/2
+        Value of var[0] = 0
+        Value of var[1] = 10
+        Value of var[2] = -3/4
+        --------LP_SOLVE--------
+        Value of objective function: -31.5
+        Value of var[0] = 0.0
+        Value of var[1] = 10.0
+        Value of var[2] = 0.0
+        Value of var[3] = 0.75
         */
+    }
+
+    public static void test(){
+        MLOProblem mloProblem = new MLOProblem(3);
+        mloProblem.setNotLowerBoundedVariableIndexes(1);
+        mloProblem.addConstraint("-9 1 8",MLOProblem.GE,"4");
+        mloProblem.addConstraint("3 -2 4",MLOProblem.LE,"35");
+        mloProblem.addConstraint("1 0 0",MLOProblem.LE,"10");
+        mloProblem.addConstraint("1 0 0",MLOProblem.GE,"-10");
+        mloProblem.addConstraint("0 1 0",MLOProblem.LE,"10");
+        mloProblem.addConstraint("0 1 0",MLOProblem.GE,"-10");
+        mloProblem.addConstraint("0 0 1",MLOProblem.LE,"10");
+        mloProblem.addConstraint("0 0 1",MLOProblem.GE,"-10");
+        mloProblem.setObjFun("1 3 -2");
+
+        Solver solver = new Solver(mloProblem);
+        //System.out.println("--------CHECKING FEASIBILITY--------");solver.checkFeasibilityUsingMLO_RB();
+        System.out.println("\n--------SOLVING MLO_RB--------");solver.solveUsingMLO_RB();
+        System.out.println("\n--------LP_SOLVE--------");solver.solveUsingLPSolve();
+
     }
 }
